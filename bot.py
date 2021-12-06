@@ -35,6 +35,7 @@ async def on_member_remove(member):
 
 @bot.event
 async def on_message(ctx):
+    print(ctx)
     author = ctx.author
     cnt = r.get(str(author))
     if cnt is not None:
@@ -54,37 +55,38 @@ async def helpcmd(ctx):
 
 
 # The below code kicks member.
-@bot.command()
 @commands.has_permissions(kick_members=True)
+@bot.command(name='kick')
 async def kick(ctx, member: discord.Member, *, reason="No reason provided"):
-    if member == None or member == ctx.message.author:
-        await ctx.channel.send("You cannot ban yourself")
+    print(ctx)
+    if member is None or member == ctx.message.author:
+        await ctx.channel.send("You cannot kick yourself")
         return
-    r.delete(str(member))
     await member.kick(reason=reason)
     embed = discord.Embed(title=f":boot: Kicked {member.name}!",
                           description=f"Reason: {reason}\nBy: {ctx.author.mention}")
     await ctx.message.delete()
     await ctx.channel.send(embed=embed)
+    r.delete(str(member))
 
 
 # The below code bans member.
-@bot.command()
 @commands.has_permissions(ban_members=True)
-async def ban(ctx, member: discord.User = None, reason="No reason provided"):
-    if member == None or member == ctx.message.author:
+@bot.command(name='ban')
+async def ban(ctx, *, member: discord.User = None, reason="No reason provided"):
+    if member is None or member == ctx.message.author:
         await ctx.channel.send("You cannot ban yourself")
         return
     embed = discord.Embed(title=f":x: Banned {member.name}!",
                           description=f"Reason: {reason}\nBy: {ctx.author.mention}")
-    r.delete(str(member))
     await ctx.guild.ban(member, reason=reason)
     await ctx.channel.send(embed=embed)
+    r.delete(str(member))
 
 
 # The below code unbans member.
-@bot.command()
 @commands.has_permissions(administrator=True)
+@bot.command(name='unban')
 async def unban(ctx, *, member, reason="No reason provided"):
     banned_users = await ctx.guild.bans()
     for ban_entry in banned_users:
@@ -95,7 +97,7 @@ async def unban(ctx, *, member, reason="No reason provided"):
             await ctx.guild.unban(user)
             await ctx.channel.send(embed=embed)
             return
-    await ctx.channel.send('This user is not banned')
+    await ctx.channel.send('This user is not banned.')
 
 
 bot.run(TOKEN)
